@@ -1,0 +1,10 @@
+run:
+./server <sever_ip>
+./client <server_ip>
+
+When the client wants to enter a message to encrypt:
+only one word can be entered (scanf stops reading at '\0')."
+
+You can change the timeout and keep-alive time by modifying the following defines:
+#define TIMEOUT 
+#define KEEP_ALIVE
