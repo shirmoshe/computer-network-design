@@ -14,11 +14,11 @@
 
 #define MULTICAST_IP "239.0.0.1"
 #define UDP_PORT 9090
-#define TCP_IP "192.168.99.8"
+//#define TCP_IP "192.168.99.8"
 #define PORT 8080
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
-#define TIMEOUT 60
+#define TIMEOUT 30
 
 typedef struct {
     int socket;
@@ -137,8 +137,9 @@ void *handle_client(void *arg) {
             pthread_mutex_lock(&clients[client_index].lock);
             clients[client_index].last_activity = time(NULL);
             pthread_mutex_unlock(&clients[client_index].lock);
-
+            
             memset(buffer, 0, BUFFER_SIZE);
+
 
             break;
 
@@ -250,11 +251,20 @@ void *handle_udp(void *arg) {
     
    
 
-int main() {
+int main(int argc, char *argv[]) {
     int server_fd, new_socket, *client_socket, udp_socket;
     struct sockaddr_in address, udp_addr;
     int addrlen = sizeof(address);
     pthread_t thread_id, monitor_thread_id, multicast_thread_id, udp_thread_id;
+
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <server_address>\n", argv[0]);
+        return -1;
+    }
+
+    char *server_ip = argv[1];
+
+
 
     // Initialize DIFI HELMAN parameters
     srand(time(0));
@@ -300,29 +310,6 @@ int main() {
     printf("  addr = %u\n", sock_addr.sin_addr.s_addr);
     printf("  port = %d\n", sock_addr.sin_port);
 
-  /* while(1)
-        { printf("Enter a line: ");
-        scanf("%s", &line);
-
-        //sendto() will automatically use UDP layer
-        sendto(udp_socket, line, strlen(line)+1, 0 ;
-            (struct sockaddr *)&udp_addr, sizeof(udp_addr));
-        } 
-   */     
-
-    /*========================================================================*/  
-    /*// Bind UDP socket
-    udp_addr.sin_family = AF_INET;
-    udp_addr.sin_addr.s_addr = inet_addr(MULTICAST_IP);
-    udp_addr.sin_port = htons(UDP_PORT);
-    if (bind(udp_socket, (struct sockaddr *)&udp_addr, sizeof(udp_addr)) < 0) {
-        perror("UDP bind failed");
-        close(udp_socket);
-        exit(EXIT_FAILURE);
-    }
-*/
-   // printf("before UDP thread\n");
-
 
     // Create a thread to handle UDP communication
     if (pthread_create(&udp_thread_id, NULL, handle_udp, (void *)&udp_socket) != 0) {
@@ -340,7 +327,7 @@ int main() {
 
     // Bind server socket to the specified port
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr(TCP_IP); // use specific address
+    address.sin_addr.s_addr = inet_addr(server_ip); // use specific address
     address.sin_port = htons(PORT);
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         perror("bind failed");
@@ -388,15 +375,6 @@ int main() {
         pthread_detach(thread_id);
 
     }
-
-    
-
-
-
-
-
-
-
 
     if (new_socket < 0) {
         perror("accept failed");
