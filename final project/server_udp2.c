@@ -14,7 +14,7 @@
 
 #define MULTICAST_IP "239.0.0.1"
 #define UDP_PORT 9090
-#define TCP_IP "192.168.99.5"
+#define TCP_IP "192.168.99.8"
 #define PORT 8080
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024

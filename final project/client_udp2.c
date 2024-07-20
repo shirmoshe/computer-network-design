@@ -16,6 +16,7 @@
 
 #define MULTICAST_IP "239.0.0.1"
 #define MULTICAST_PORT 9090
+//#define SERVER_ADDRESS "192.168.99.8"
 
 #define PORT 8080              // The port number on which the server is listening
 #define BUFFER_SIZE 1024       // Size of the buffer to store messages
@@ -243,11 +244,19 @@ void *UDP_communication(void *arg) {
 
 
     
-int main() {
+int main(int argc, char *argv[]) {
     pthread_t comm_thread_id, keep_alive_thread_id, udp_thread_id;
     int sock = 0, udp_sock = 0 ;                       
     struct sockaddr_in serv_addr, udp_addr;       // Server address structure
-    char server_add[] = "192.168.99.5";
+
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <server_address>\n", argv[0]);
+        return -1;
+    }
+
+    char *server_address = argv[1];
+  
+;
  
     printf("Enter host ID: (expected value 1-10): ");
     int id;
