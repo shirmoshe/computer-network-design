@@ -16,8 +16,8 @@
 
 #define MULTICAST_IP "239.0.0.1"
 #define MULTICAST_PORT 9090
-//#define SERVER_ADDRESS "192.168.99.8"
-
+#define KEEP_ALIVE 10
+#define TIMEOUT 30
 #define PORT 8080              // The port number on which the server is listening
 #define BUFFER_SIZE 1024       // Size of the buffer to store messages
 
@@ -40,6 +40,9 @@ typedef struct {
     int server_key;
     int client_key; 
     int mcst_key; 
+    time_t server_last_activity;
+    pthread_mutex_t lock;
+
 } thread_args_t;
 
 char *encrypt(char *msg, int key) {
@@ -52,9 +55,6 @@ char *encrypt(char *msg, int key) {
   //  printf("IN ENCRYPT MSG: %s\n", encrypted_msg);
     return encrypted_msg;
 }
-
-
-
 
 void decrypt(char *msg, int key, char* decrypt_msg) {
     char *temp_pointer = decrypt_msg; 
@@ -83,9 +83,20 @@ void *TCP_communication(void *arg) {
 
         // read the message
         ssize_t bytes_read = read(sock, buffer, sizeof(buffer) - 1);
+        //if (bytes_read <= 0) {
+        //    break;
+        //}
         if (bytes_read <= 0) {
-            break;
-        }       
+            if (bytes_read == 0) {
+                printf("Server disconnected. Exiting TCP communication thread.\n");
+            } else {
+                perror("read failed");
+            }
+            pthread_exit(NULL);
+        }     
+
+
+
         printf("<-- Recieve: %s\n", buffer);
 
         // Read the message type
@@ -118,6 +129,7 @@ void *TCP_communication(void *arg) {
                 memset(buffer, 0, BUFFER_SIZE);
 
                 break;
+            
 
             case 3: 
                 // type MC KEY
@@ -137,9 +149,10 @@ void *TCP_communication(void *arg) {
 
                 while (1)
                 {
-                    printf("If you want to send encrypt message to the group press Y ");
+                    printf("If you want to send encrypt message to the group press y ");
+                    
                     scanf(" %c", &answer);
-                    if(answer == 'Y'){
+                    if(answer == 'y'){
                         printf("Enter your message: ");
                         scanf("%s", input_msg); 
                         strcpy(encrypt_msg, encrypt(input_msg, args->shared_key));  // Encrypt the message using the shared key
@@ -157,6 +170,21 @@ void *TCP_communication(void *arg) {
                 }
 
                 break;
+
+
+            case 7:
+                printf("in case 7\n");
+                pthread_mutex_lock(&(args->lock));
+                args->server_last_activity = time(NULL);
+                pthread_mutex_unlock(&(args->lock));
+                
+                memset(buffer, 0, BUFFER_SIZE);
+
+                break;
+
+            default:
+                printf("Unknown message type: %d\n", type);
+                break;
         }
     }    
 }
@@ -165,13 +193,14 @@ void *send_keep_alive(void *arg) {
     printf("in KEEP ALIVE thread\n");
     int sock = *(int *)arg;
     while (1) {
-        sleep(30);  // Sleep for 60 seconds
+        sleep(KEEP_ALIVE); 
         char keep_alive_msg[] = "Message Type:(9)KEEP ALIVE";  // type 9 - keep alive
         send(sock, keep_alive_msg, strlen(keep_alive_msg), 0);  // Send keep alive message to server
         printf("\n--> Send: %s\n", keep_alive_msg);
     }
     pthread_exit(NULL);
 }
+
 
 void *UDP_communication(void *arg) {
 
@@ -234,10 +263,7 @@ void *UDP_communication(void *arg) {
         decrypt(udp_buffer, global_multicast_key, decrypt_msg);
 
         printf("Decrypt UDP message: %s\n", decrypt_msg);
-
-        close(udp_sock);
-        pthread_exit(NULL);
-        return NULL;
+        
         }
 
 }
@@ -256,7 +282,7 @@ int main(int argc, char *argv[]) {
 
     char *server_address = argv[1];
   
-;
+
  
     printf("Enter host ID: (expected value 1-10): ");
     int id;
@@ -272,7 +298,7 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_port = htons(PORT);  // Set port number (the port that the server listens on)
 
     // Convert server addresses from text to binary form
-    if (inet_pton(AF_INET, server_add, &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, server_address, &serv_addr.sin_addr) <= 0) {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
@@ -291,7 +317,7 @@ int main(int argc, char *argv[]) {
     args.sock = sock;
     args.udp_sock = udp_sock;
     args.id = id;
-      
+    args.server_last_activity = time(NULL);
 
 
     // =================== Create UDP socket ========================
