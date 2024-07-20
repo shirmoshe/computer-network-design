@@ -328,8 +328,6 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    printf("before create a KEEP ALIVE thread\n");
-
     // Create a thread to send keep alive messages to the server
     if (pthread_create(&keep_alive_thread_id, NULL, send_keep_alive, (void *)&sock) != 0) {
         printf("Failed to create keep alive thread\n");
