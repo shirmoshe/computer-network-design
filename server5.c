@@ -286,7 +286,8 @@ int main(int argc, char *argv[]) {
     printf("Generate DH perameter:\ng = %d, p=%d, multicast key=%d\n", g, p, multicast_key);
     
     // Initialize clients array
-    for (int i = 0; i < MAX_CLIENTS; ++i) {
+    int i; 
+    for (i = 0; i < MAX_CLIENTS; ++i) {
         clients[i].socket = -1;
         clients[i].g = g;
         clients[i].p = p;
