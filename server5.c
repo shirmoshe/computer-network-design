@@ -75,7 +75,8 @@ void *handle_client(void *arg) {
     
     // Find the client index and initialize last activity time
     pthread_mutex_lock(&clients_lock);
-    for (int i = 0; i < MAX_CLIENTS; ++i) {
+    int i;
+    for (i = 0; i < MAX_CLIENTS; ++i) {
         if (clients[i].socket == -1) {
             clients[i].socket = client_socket;
             clients[i].last_activity = time(NULL);
