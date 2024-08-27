@@ -177,7 +177,7 @@ void *handle_client(void *arg) {
             printf("Data is: %s\n", rcv_msg);
 
             //strcpy(decrypt_msg, decrypt(rcv_msg, shared_key));  // decrypt message wuth the shared key 
-            decrypt(rcv_msg, shared_key, decrypt_msg);
+            decrypt(rcv_msg, clients[client_index].shared_key, decrypt_msg);
             
             printf("return from dec function\n");
             printf("decrypt_msg, %s\n", decrypt_msg);
