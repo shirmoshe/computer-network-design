@@ -115,7 +115,7 @@ void *handle_client(void *arg) {
 
         switch (type) {
         
-        case 0:
+        case 0:{
             // type JOIN 
             int key = ((int)pow(clients[client_index].g, a)) % clients[client_index].p;  // Calculate server_key as g^a mod p
             clients[client_index].server_key = key;
@@ -130,12 +130,12 @@ void *handle_client(void *arg) {
             memset(buffer, 0, BUFFER_SIZE);
 
             break;
-
+        }
             
         
 
         case 9:
-            // type KEEP ALIVE
+            {   // type KEEP ALIVE
             // Update last activity time
             pthread_mutex_lock(&clients[client_index].lock);
             clients[client_index].last_activity = time(NULL);
@@ -146,8 +146,8 @@ void *handle_client(void *arg) {
 
 
             break;
-
-        case 2: 
+            }
+        case 2:{ 
             // type KEY(2)
             int client_key, multicast_key, encrypted_mc_key;
             sscanf(buffer, "Message Type:(2)KEY: %d\n", &client_key); // get g^b from user 
@@ -169,8 +169,8 @@ void *handle_client(void *arg) {
             memset(buffer, 0, BUFFER_SIZE);
 
             break;
-
-        case 4:         
+        }
+        case 4:{         
 
             char rcv_msg[BUFFER_SIZE], decrypt_msg[BUFFER_SIZE];
             sscanf(buffer, "Message Type:(4): The Encrypt Message is: %s\n", rcv_msg); 
@@ -192,7 +192,7 @@ void *handle_client(void *arg) {
             memset(buffer, 0, BUFFER_SIZE);
             
             break;
-        
+        }
         }
     }
 }
