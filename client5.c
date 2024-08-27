@@ -106,7 +106,7 @@ void *TCP_communication(void *arg) {
         
         switch (type){
 
-            case 1: 
+            case 1: {
                 // type WELCOME
                 int key, g, p, shared_key, client_key, server_key;
                 // Extract key, g, and p from the welcome message
@@ -129,10 +129,10 @@ void *TCP_communication(void *arg) {
                 memset(buffer, 0, BUFFER_SIZE);
 
                 break;
-            
+            }
 
             case 3: 
-                // type MC KEY
+                {   // type MC KEY
                 int sleep_flag = 0;
                 int encrypted_mc_key;
                 char answer= 'N';
@@ -184,10 +184,10 @@ void *TCP_communication(void *arg) {
                 }
 
                 break;
-
+                }
 
             case 7:
-                printf("in case 7\n");
+                {  printf("in case 7\n");
                 pthread_mutex_lock(&(args->lock));
                 args->server_last_activity = time(NULL);
                 pthread_mutex_unlock(&(args->lock));
@@ -195,13 +195,13 @@ void *TCP_communication(void *arg) {
                 memset(buffer, 0, BUFFER_SIZE);
 
                 break;
-
-            case 99:
+                }
+            case 99:{
                 printf("Thank you for your Participate and Come back soon!");
-                
+            }
             default:
-                printf("Unknown message type: %d\n", type);
-                break;
+                {   printf("Unknown message type: %d\n", type);
+                break;}
         }
     }    
 }
